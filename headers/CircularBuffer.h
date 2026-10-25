@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdexcept>
 #include <iterator>
+#include <iostream>
 
 using namespace std;
 
@@ -17,6 +18,8 @@ public:
             {
                 _capacity = size_t(capacity);
                 _circularBuffer = vector<T>(capacity); // TODO: does it need to be dynamically allocated i.e. new vector?
+                _readPtr = _circularBuffer.begin();
+                _writePtr = _circularBuffer.begin();
             }
             else
             {
@@ -178,7 +181,7 @@ public:
 private:
     void _pushImpl(T value)
     {
-        _circularBuffer.insert(_writePtr, value);
+        *_writePtr = value;
         _writePtr++;
         // account for looping to the front, we only inc by one so we don't have to do modulo math
         if (_writePtr == _circularBuffer.end())
@@ -187,12 +190,17 @@ private:
         // with our current overwrite behavior
         if (_size < _capacity)
             _size++;
+        // if we are overwriting previously valid data, we need to inc _readPtr as well
+        else
+        {
+            _readPtr++;
+        }
     }
 
-    typename vector<T>::iterator _readPtr;
-    typename vector<T>::iterator _writePtr;
     size_t _capacity;
     size_t _size = 0;
     // T array[_CAPACITY] myArray;
     vector<T> _circularBuffer;
+    typename vector<T>::iterator _readPtr;
+    typename vector<T>::iterator _writePtr;
 };
